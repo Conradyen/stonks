@@ -16,11 +16,6 @@ class SmaCross(bt.Strategy):
         self.buyAtOpen = False
         self.isOrder = False
 
-    def log(self, txt, dt=None):
-        ''' Logging function fot this strategy'''
-        dt = dt or self.datas[0].datetime.date(0)
-        print('%s, %s' % (dt.isoformat(), txt))
-
     def next(self):
         # trading hour 13:30 to 19:30
         # print(self.datetime.time(ago=0).hour)
@@ -28,13 +23,10 @@ class SmaCross(bt.Strategy):
         # self.isOrder = False
         # print("cash available : ",self.broker.get_cash() )
         # print(f"position {self.position}")
-        if self.buyAtOpen == True:
-            if self.broker.get_cash() > 2000:
-                print(self.datetime.time(ago=0).hour , self.datetime.time(ago=0).minute,self.data.open.get(ago=0)[0])
-                print(f"position {self.position}")
-                size = int(2000 / self.data)
-                self.buy(size = size)
-                self.isOrder = True
+        if self.buyAtOpen == True and self.broker.get_cash() >= 2000:
+            size = int(2000 / self.data)
+            self.buy(size = size)
+            self.isOrder = True
 
         if self.currentDate != self.datetime.date(ago=0):
             self.currentDate = self.datetime.date(ago=0)
@@ -55,61 +47,47 @@ class SmaCross(bt.Strategy):
             self._is_afternoon_up()
             self._is_afternoon_down()
 
+    def log(self, txt):
+        ''' Logging function for this strategy'''
+        print(f"{self.datetime.date(ago=0)}-{self.datetime.time(ago=0).hour}:{self.datetime.time(ago=0).minute}")
+        print(txt)
+        print(f"price : {self.data.open.get(ago=0)[0]}")
+        print(f"position {self.position.size}")
+
     def _is_morning_up(self):
         move = (self.data - self.openPrice) / self.openPrice
-        # print(self.data.open.get(ago=0)[0] - self.openPrice)
-        # print(self.openPrice)
-        # print(move)
-        if move > 0.02:
-            if self.broker.get_cash() >= 2000 and self.isOrder != True:
-                print(f"morning move up : {move}, sell ")
-                print(self.datetime.time(ago=0).hour , self.datetime.time(ago=0).minute,self.data.open.get(ago=0)[0])
-                self.isOrder = True
-                size = int(2000 / self.data)
-                print(f"size {size}")
-
-                self.log('BUY CREATE, %.2f' % self.datas[0].close[0])
-                print(f"position {self.position.size}")
-                if self.position.size - size > 0:
-                    self.sell(size = size)
+        if move > 0.02 and self.isOrder != True:
+            self.isOrder = True
+            size = int(2000 / self.data)
+            self.log(f"morning move up : {move}, sell ")
+            if self.position.size - size > 0:
+                self.sell(size = size)
 
     def _is_morning_down(self):
         move = (self.data - self.openPrice) / self.openPrice
-        # print(self.data.open.get(ago=0)[0] - self.openPrice)
-        # print(move)
-        if move < -0.02:
-            if self.isOrder != True :
-                print(f"time {self.datetime.time(ago=0).hour } : {self.datetime.time(ago=0).minute} morning move down : {move}, buy ")
-                print(self.openPrice,self.data.open.get(ago=0)[0])
-                print(f"position {self.position}")
+        if move < -0.015:
+            if self.isOrder != True and self.broker.get_cash() >= 2000:
                 self.isOrder = True
                 size = int(2000 / self.data)
+                self.log(f"morning move dowm : {move}, buy ")
                 self.buy(size = size)
 
 
     def _is_afternoon_up(self):
         move = (self.data - self.afternoorPrice) / self.afternoorPrice
-        # print(move)
-        if move > 0.02:
-            if self.isOrder != True:
-                print(f"afternoon move up : {move}, sell ")
-                print(self.datetime.time(ago=0).hour , self.datetime.time(ago=0).minute,self.data.open.get(ago=0)[0])
-                print(f"position {self.position}")
-                self.isOrder = True
-                size = int(2000 / self.data)
-                if self.position.size - size > 0:
-                    self.sell(size = size)
+
+        if move > 0.02 and self.isOrder != True:
+            self.isOrder = True
+            size = int(2000 / self.data)
+            self.log(f"afternoon move up : {move}, sell ")
+            if self.position.size - size > 0:
+                self.sell(size = size)
 
     def _is_afternoon_down(self):
         move = (self.data - self.afternoorPrice) / self.afternoorPrice
-        # print(move)
         if move < -0.015 and self.isOrder != True:
-            print(f"afternoon move down : {move}, sell ")
+            self.log(f"afternoon move down : {move}, buy ")
             self.buyAtOpen = True
-
-    
-
-
 
 
 cerebro = bt.Cerebro()
