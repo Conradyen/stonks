@@ -2,8 +2,8 @@ import alpaca_backtrader_api
 import backtrader as bt
 from datetime import datetime
 
-ALPACA_API_KEY = "PKIL2PW9CADBJ8NB4M6O"
-ALPACA_SECRET_KEY = "O2iwwMKrpYwnaYPlEgtZ6Ia6rgoFU21nACmqBlT7"
+ALPACA_API_KEY = <KEY>
+ALPACA_SECRET_KEY = <SECRTE>
 ALPACA_PAPER = True
 
 
