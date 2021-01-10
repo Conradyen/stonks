@@ -107,6 +107,8 @@ class SmaCross(bt.Strategy):
             print(f"afternoon move down : {move}, sell ")
             self.buyAtOpen = True
 
+    
+
 
 
 
